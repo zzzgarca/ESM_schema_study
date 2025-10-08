@@ -1,0 +1,115 @@
+TITLE: MLCFA
+DATA:	FILE = ...;
+
+VARIABLE:		NAMES = response_id day_id report_id participant_id
+		q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16 age gender
+		BDI_TOTAL_pre YSQ_D1_pre YSQ_D2_pre LSAS_ANX_pre LSAS_AVOID_pre LSAS_TOTAL_pre
+		BDI_TOTAL_post YSQ_D1_post YSQ_D2_post LSAS_ANX_post LSAS_AVOID_post LSAS_TOTAL_post
+		Self_Criticism_T Exp_Avoidance_T Soc_Anx_T Depress_T
+		response_within_day_participant q2_r q2_r_other q2_r_social q3_r q4_r
+		number_reports number_days time_intervals time_days time_intervals_intraday time;
+		
+		MISSING = ALL (9999);
+	
+		USEVARIABLES = q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16
+		participant_id;
+
+		CLUSTER = participant_id;
+
+
+ANALYSIS:		TYPE = TWOLEVEL;
+		ESTIMATOR= MLR;
+
+MODEL:		%WITHIN%
+		Self_CriticismW BY
+		q5*(LW5)
+		q6(LW6)
+		q7(LW7);
+		Exp_AvoidanceW BY
+		q8*(LW8)
+		q9(LW9)
+		q10(LW10); 
+		Soc_AnxietyW BY
+		q11*(LW11)
+		q12(LW12)
+		q13(LW13); 
+		DepressionW BY
+		q14*(LW14)
+		q15(LW15)
+		q16(LW16);
+		q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16 (VW5-VW16)
+		Self_CriticismW@1;
+		Exp_AvoidanceW@1;
+		Soc_AnxietyW@1;
+		DepressionW@1;
+		Self_CriticismW-DepressionW WITH Self_CriticismW-DepressionW
+		
+		
+	
+		%BETWEEN%
+		Self_CriticismB BY
+		q5*(LB5)
+		q6(LB6)
+		q7(LB7); 
+		Exp_AvoidanceB BY
+		q8*(LB8)
+		q9(LB9)
+		q10(LB10); 
+		Soc_AnxietyB BY
+		q11*(LB11)
+		q12(LB12)
+		q13(LB13); 
+		DepressionB BY
+		q14*(LB14)
+		q15(LB15)
+		q16(LB16);
+		q5 q6 q7 (VB5-VB7)
+		q9 q10 q11 q12 q13 q14 q15 q16 (VB9-VB16)
+		q8@0.001;
+		Self_CriticismB@1;
+		Exp_AvoidanceB@1;
+		Soc_AnxietyB@1;
+		DepressionB@1;
+		Self_CriticismB-DepressionB WITH Self_CriticismB-DepressionB
+		
+
+MODEL CONSTRAINT: 
+
+NEW(numw_Self_Criticism denow_Self_Criticism omegaw_Self_Criticism
+numb_Self_Criticism denob_Self_Criticism omegab_Self_Criticism
+numw_Exp_Avoidance denow_Exp_Avoidance omegaw_Exp_Avoidance
+numb_Exp_Avoidance denob_Exp_Avoidance omegab_Exp_Avoidance
+numw_Soc_Anxiety denow_Soc_Anxiety omegaw_Soc_Anxiety
+numb_Soc_Anxiety denob_Soc_Anxiety omegab_Soc_Anxiety
+numw_Depression denow_Depression omegaw_Depression
+numb_Depression denob_Depression omegab_Depression);
+
+numw_Self_Criticism=(LW5+LW6+LW7)**2;
+denow_Self_Criticism=((LW5+LW6+LW7)**2)+(VW5+VW6+VW7);
+omegaw_Self_Criticism = numw_Self_Criticism/denow_Self_Criticism;
+numb_Self_Criticism=(LB5+LB6+LB7)**2;
+denob_Self_Criticism=((LB5+LB6+LB7)**2)+(VB5+VB6+VB7);
+omegab_Self_Criticism = numb_Self_Criticism/denob_Self_Criticism;
+
+numw_Exp_Avoidance=(LW8+LW9+LW10)**2;
+denow_Exp_Avoidance=((LW8+LW9+LW10)**2)+(VW8+VW9+VW10);
+omegaw_Exp_Avoidance= numw_Exp_Avoidance/denow_Exp_Avoidance;
+numb_Exp_Avoidance=(LB8+LB9+LB10)**2;
+denob_Exp_Avoidance=((LB8+LB9+LB10)**2)+(0.001+VB9+VB10);
+omegab_Exp_Avoidance= numb_Exp_Avoidance/denob_Exp_Avoidance;
+
+numw_Soc_Anxiety=(LW11+LW12+LW13)**2;
+denow_Soc_Anxiety=((LW11+LW12+LW13)**2)+(VW11+VW12+VW13);
+omegaw_Soc_Anxiety = numw_Soc_Anxiety/denow_Soc_Anxiety;
+numb_Soc_Anxiety=(LB11+LB12+LB13)**2;
+denob_Soc_Anxiety=((LB11+LB12+LB13)**2)+(VB11+VB12+VB13);
+omegab_Soc_Anxiety= numb_Soc_Anxiety/denob_Soc_Anxiety;
+
+numw_Depression=(LW14+LW15+LW16)**2;
+denow_Depression=((LW14+LW15+LW16)**2)+(VW14+VW15+VW16);
+omegaw_Depression= numw_Depression/denow_Depression;
+numb_Depression=(LB14+LB15+LB16)**2;
+denob_Depression=((LB14+LB15+LB16)**2)+(VB14+VB15+VB16);
+omegab_Depression= numb_Depression/denob_Depression;
+
+OUTPUT:		TECH1 TECH8 CINTERVAL STDYX;

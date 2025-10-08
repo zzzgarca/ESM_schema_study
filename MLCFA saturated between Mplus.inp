@@ -1,0 +1,56 @@
+TITLE: MLCFA saturated between
+DATA:	FILE = ... ;
+
+VARIABLE:		NAMES = response_id day_id report_id participant_id
+		q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16 age gender
+		BDI_TOTAL_pre YSQ_D1_pre YSQ_D2_pre LSAS_ANX_pre LSAS_AVOID_pre LSAS_TOTAL_pre
+		BDI_TOTAL_post YSQ_D1_post YSQ_D2_post LSAS_ANX_post LSAS_AVOID_post LSAS_TOTAL_post
+		Self_Criticism_T Exp_Avoidance_T Soc_Anx_T Depress_T
+		response_within_day_participant q2_r q2_r_other q2_r_social q3_r q4_r
+		number_reports number_days time_intervals time_days time_intervals_intraday time;
+		
+		MISSING = ALL (9999);
+	
+		USEVARIABLES = q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16
+		participant_id;
+
+		CLUSTER = participant_id;
+
+
+ANALYSIS:		TYPE = TWOLEVEL;
+		ESTIMATOR= MLR;
+
+MODEL:		%WITHIN%
+		q5-q16 WITH q5-q16
+		
+		
+		%BETWEEN%
+		Self_CriticismB BY
+		q5*(LB5)
+		q6(LB6)
+		q7(LB7); 
+		Exp_AvoidanceB BY
+		q8*(LB8)
+		q9(LB9)
+		q10(LB10); 
+		Soc_AnxietyB BY
+		q11*(LB11)
+		q12(LB12)
+		q13(LB13); 
+		DepressionB BY
+		q14*(LB14)
+		q15(LB15)
+		q16(LB16);
+		q5 q6 q7 (VB5-VB7)
+		q9 q10 q11 q12 q13 q14 q15 q16 (VB9-VB16)
+		q8@0.001;
+		Self_CriticismB@1;
+		Exp_AvoidanceB@1;
+		Soc_AnxietyB@1;
+		DepressionB@1;
+		Self_CriticismB-DepressionB WITH Self_CriticismB-DepressionB
+		
+
+MODEL CONSTRAINT: 
+
+OUTPUT:		TECH1 TECH8 CINTERVAL STDYX;

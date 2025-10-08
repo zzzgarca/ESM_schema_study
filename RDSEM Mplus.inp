@@ -1,0 +1,121 @@
+TITLE: RDSEM
+DATA:	FILE = ...;
+
+VARIABLE:	NAMES = response_id day_id report_id participant_id
+		q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15 q16 
+		age gender
+		BDI_TOTAL_pre YSQ_D1_pre YSQ_D2_pre LSAS_ANX_pre LSAS_AVOID_pre LSAS_TOTAL_pre
+		BDI_TOTAL_post YSQ_D1_post YSQ_D2_post LSAS_ANX_post LSAS_AVOID_post LSAS_TOTAL_post
+		Self_Criticism_T Exp_Avoidance_T Soc_Anx_T Depress_T
+		response_within_day_participant q2_r q2_r_other q2_r_social q3_r q4_r
+		number_reports number_days time_intervals time_days time_intervals_intraday time;
+		
+		MISSING = ALL (9999);
+	
+		USEVARIABLES = YSQ_D1_pre YSQ_D2_pre Self_Criticism_T Exp_Avoidance_T
+		Soc_Anx_T Depress_T participant_id
+		time_intervals time;
+
+		CLUSTER = participant_id;
+		BETWEEN = YSQ_D1_pre YSQ_D2_pre;
+		WITHIN = time_intervals;
+		
+		LAGGED = Self_Criticism_T(1) Exp_Avoidance_T(1) 
+		Soc_Anx_T(1) Depress_T(1);
+
+		TINTERVAL = time(1);
+
+ANALYSIS:	TYPE = TWOLEVEL RANDOM;
+		ESTIMATOR = BAYES;  
+		PROCESSORS = 2;
+		BITERATIONS = (5000);
+
+MODEL:		%WITHIN%	
+		time_intervals Self_Criticism_T Exp_Avoidance_T Soc_Anx_T Depress_T; 		
+  		
+  		s11 | Self_Criticism_T^ ON Self_Criticism_T^1;
+  		s22 | Exp_Avoidance_T^ ON Exp_Avoidance_T^1;
+  		s33 | Soc_Anx_T^ ON Soc_Anx_T^1;
+  		s44 | Depress_T^ ON Depress_T^1;
+
+  		s10 | Self_Criticism_T ON time_intervals;
+  		s20 | Exp_Avoidance_T ON time_intervals;
+  		s30 | Soc_Anx_T ON time_intervals;
+  		s40 | Depress_T ON time_intervals;
+  		
+  		s12 | Self_Criticism_T^ ON Exp_Avoidance_T^1;
+  		s13 | Self_Criticism_T^ ON Soc_Anx_T^1;
+  		s14 | Self_Criticism_T^ ON Depress_T^1;
+  		s21 | Exp_Avoidance_T^ ON Self_Criticism_T^1;
+  		s23 | Exp_Avoidance_T^ ON Soc_Anx_T^1;
+  		s24 | Exp_Avoidance_T^ ON Depress_T^1;
+  		s31 | Soc_Anx_T^ ON Self_Criticism_T^1;
+  		s32 | Soc_Anx_T^ ON Exp_Avoidance_T^1;
+  		s34 | Soc_Anx_T^ ON Depress_T^1;
+  		s41 | Depress_T^ ON Self_Criticism_T^1;
+  		s42 | Depress_T^ ON Exp_Avoidance_T^1;
+  		s43 | Depress_T^ ON Soc_Anx_T^1;
+
+  		
+  		%BETWEEN%
+		YSQ_D1_pre YSQ_D2_pre Self_Criticism_T Exp_Avoidance_T Soc_Anx_T Depress_T;
+		s10 s20 s30 s40 s11 s22 s33 s44 s12 s13 s14 s21 s23 s24 s31 s32 s34 s41 s42 s43;
+		
+		Self_Criticism_T ON YSQ_D1_pre (a1D1);
+		Exp_Avoidance_T ON YSQ_D1_pre (a2D1);
+		
+		Self_Criticism_T ON YSQ_D2_pre (a1D2);
+		Exp_Avoidance_T ON YSQ_D2_pre (a2D2);
+		
+		Soc_Anx_T ON YSQ_D1_pre (c1D1);
+		Depress_T ON YSQ_D1_pre (c2D1);
+		
+		Soc_Anx_T ON YSQ_D2_pre (c1D2);
+		Depress_T ON YSQ_D2_pre (c2D2);
+		
+		Soc_Anx_T ON Self_Criticism_T (b1Anx);
+		Depress_T ON Self_Criticism_T (b1Dep);
+		
+		Soc_Anx_T ON Exp_Avoidance_T (b2Anx);
+		Depress_T ON Exp_Avoidance_T (b2Dep);
+		
+		[Self_Criticism_T];
+		[Exp_Avoidance_T];
+		[Soc_Anx_T];
+		[Depress_T];
+		[s10];
+		[s20];
+		[s30];
+		[s40];
+		[s11];
+		[s22];
+		[s33];
+		[s44];
+		[s12];
+		[s13];
+		[s14];
+		[s21];
+		[s23];
+		[s24];
+		[s31];
+		[s32];
+		[s34];
+		[s41];
+		[s42];
+		[s43];
+
+  		YSQ_D1_pre WITH YSQ_D2_pre;
+  		Self_Criticism_T WITH Exp_Avoidance_T;
+  		
+	
+MODEL CONSTRAINT:	NEW (ind1, ind2, ind3, ind4, ind5, ind6, ind7, ind8);
+		ind1=a1D1*b1Anx;
+		ind2=a1D1*b1Dep;
+		ind3=a2D1*b2Anx;
+		ind4=a2D1*b2Dep;
+		ind5=a1D2*b1Anx;
+		ind6=a1D2*b1Dep;
+		ind7=a2D2*b2Anx;
+		ind8=a2D2*b2Dep;
+
+OUTPUT:	TECH1 TECH8 CINTERVAL STANDARDIZED;
