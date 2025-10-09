@@ -21,7 +21,7 @@ This repository contains the analysis scripts in **R** and **Mplus** for the pap
 ## Usage  
 1. Open the R scripts to reproduce data preprocessing, descriptive analyses, and MLM results.  
 2. Use the provided Mplus input files (`.inp`) to replicate confirmatory factor analyses and structural models.  
-3. Data are not publicly shared due to participant privacy; scripts are provided for transparency and reproducibility.  
+3. Data and scripts are provided for transparency and reproducibility.  
 
 ---
 
